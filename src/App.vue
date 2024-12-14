@@ -10,31 +10,59 @@ function toggleForm(){
    msg.value=isActive.value?'Hide Add Task Form':'Show Add Task Form';
 }
 
+// task store
 const task=ref('');
-const taskList=ref([]);
+const taskList=reactive([
+]);
 
+
+// Add task function
 function addTask(){
 task.value.trim().split(/\s+/);
 if (task.value==='' || task.value.length<3) return alert('Please Enter Task Name & Min 3 Characters')
-taskList.value.push(task.value);
+taskList.push({
+  name:task.value,
+  status:false
+});
 task.value='';
 }
 
+const comStyle={
+  backgroundColor:'#88e788',
+  border:'1px solid red'
+}
 
+// Delete Task Function
 function deleteTask(index){
-  taskList.value.splice(index,1);
+  taskList.splice(index,1);
 }
 
-const complatedStyle=ref({
-  backgroundColor:'green'
-})
-
-const completedTask=ref(false)
 
 
-function completeTask(){
- completedTask.value=!completedTask.value;
+function completeTask(index){
+  taskList[index].status=!taskList[index].status;
 }
+
+let search=ref('');
+
+function getFilteredList(){
+  return taskList.filter(task=>{
+    return task.name.toLowerCase().startsWith(search.value.toLowerCase())
+
+  })
+}
+
+function activeTask(){
+  return taskList.filter(task=>{
+    return task.status===true
+  })
+}
+
+
+
+
+
+
 
 </script>
 
@@ -59,16 +87,21 @@ function completeTask(){
 
 
 
+
+
             <!-- Show Task -->
-          <h4 v-show="taskList.length===0" >No Task Available Here</h4>
-            <div :style="completedTask===true?'completedStyle':'background-color:red'" v-for="(task,index) in taskList" :key="index" class="border flex items-center justify-between border-slate-300 w-6/12 text-start px-3 mb-3">
-                <div>
-                  <p>{{completedTask}}</p>
-                    <p>{{task}}</p>
+          <div class=" w-6/12 text-start my-4">
+          <input class="px-2 py-2 border border-slate-400 rounded-sm outline-none" v-show="taskList.length!==0" v-model="search" type="text" placeholder="Search Task">
+            <button @click="activeTask()">Completed</button>
+            <h4 v-show="taskList.length===0" >No tasks available</h4>
+          </div>
+            <div :style="task.status===true?comStyle:''" v-for="(task,index) in getFilteredList()" :key="index" class="border rounded-md transition flex items-center justify-between border-slate-300 w-6/12 text-start px-3 mb-3">
+              <div>
+                    <p>{{task.name}}</p>
                 </div>
 
                 <div>
-                    <button @click="completeTask()" class="bg-purple-500 hover:bg-slate-500 transition px-2 py-2 my-5 rounded text-white text-sm"> Complete </button>
+                    <button  @click="completeTask(index)" class="bg-purple-500 hover:bg-slate-500 transition px-2 py-2 my-5 rounded text-white text-sm"> {{task.status===true?'Completed':'Complete'}} </button>
                     <button @click="deleteTask(index)" class="bg-purple-500 hover:bg-slate-500 transition px-2 py-2 my-5 ml-2 rounded text-white text-sm"> Delete </button>
                 </div>
 
