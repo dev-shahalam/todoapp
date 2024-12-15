@@ -1,6 +1,9 @@
 <script setup>
 
-import { reactive, ref, onMounted } from "vue";
+import {reactive, ref, onMounted, onBeforeMount} from "vue";
+
+
+
 
 const isActive = ref(false);
 const msg = ref('Show Add Task Form')
@@ -12,62 +15,73 @@ function toggleForm() {
 }
 
 // task store
-const task = ref('');
-let taskList = reactive(
-    []
-);
+const newTask = ref('');
+
+let taskList = reactive([]);
+
 
 
 // Add task function
 function addTask() {
-    task.value.trim().split(/\s+/);
-    if (task.value === '' || task.value.length < 3) return alert('Please Enter Task Name & Min 3 Characters')
+  newTask.value.trim().split(/\s+/);
+    if (newTask.value === '' || newTask.value.length < 3) return alert('Please Enter Task Name & Min 3 Characters')
     taskList.push({
-        name: task.value,
-        status: false
+        name: newTask.value,
+        status: false,
     });
-    task.value = '';
-    saveTasks();
-}
+  saveTasks();
+  newTask.value = '';
 
-const comStyle = {
-    backgroundColor: '#88e788',
-    border: '1px solid red'
 }
+// localStorage.clear()
+
+let comStyle =({
+  backgroundColor: '#88e788',
+  border: '1px solid red'
+} )
 
 // Delete Task Function
 function deleteTask(index) {
     taskList.splice(index, 1);
+    // saveTasks();
 }
 
-
+// localStorage.clear();
 
 function completeTask(index) {
+
     taskList[index].status = !taskList[index].status;
+    saveTasks();
+
+
 }
 
 let search = ref('');
 
-function getFilteredList() {
+let getFilteredList=function getFilteredList() {
     return taskList.filter(task => {
         return task.name.toLowerCase().startsWith(search.value.toLowerCase())
     })
-};
-
-
+}
 
 
 const saveTasks = () => {
-    localStorage.setItem('tasks', JSON.stringify(taskList));
+  localStorage.setItem('tasks', JSON.stringify(taskList));
 };
 
 const loadTasks = () => {
-    const saved = localStorage.getItem('tasks');
-    taskList=saved
+  let savedData = localStorage.getItem('tasks');
+  if (savedData){
+    taskList = JSON.parse(savedData);
+  }
+
 };
 
 
-// loadTasks();
+loadTasks();
+// localStorage.clear();
+
+
 
 
 
@@ -84,7 +98,7 @@ const loadTasks = () => {
                     @click="toggleForm()">{{ msg }}</button>
                 <br>
                 <div v-show="isActive">
-                    <input v-model="task" class="w-6/12 border border-slate-300 px-5 py-2 outline-purple-500"
+                    <input v-model="newTask" class="w-6/12 border border-slate-300 px-5 py-2 outline-purple-500"
                         type="text" placeholder="Enter Task Name">
                     <br>
                     <button @click="addTask()"
